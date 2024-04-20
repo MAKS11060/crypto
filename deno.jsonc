@@ -1,8 +1,12 @@
 {
   "name": "@maks11060/crypto",
   "version": "0.1.0",
-  "exports": "./mod.ts",
   "lock": false,
+  "exports": {
+    ".": "./mod.ts",
+    "./jwk": "./src/jwk.ts",
+    "./keys": "./src/keys.ts"
+  },
   "imports": {
     "@std/bytes": "jsr:@std/bytes@^0.223.0",
     "@std/encoding": "jsr:@std/encoding@^0.223.0"

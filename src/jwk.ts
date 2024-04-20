@@ -16,11 +16,13 @@ interface ImportPubKeyRaw {
   public: string
 }
 
-interface ImportKeyRaw {
-  alg: KeyAlg
-  public: string
+interface ImportKeyRaw extends ImportPubKeyRaw {
   private?: string
   extractable?: boolean
+}
+
+interface ImportKeyPairRaw extends ImportKeyRaw {
+  private: string
 }
 
 /** Get options by alg */
@@ -131,7 +133,8 @@ const importPubKeyRaw = (options: ImportPubKeyRaw) => {
  *
  * @example
  * ```ts
- * import {} from '@maks11060/crypto'
+ * import {importKeyRaw} from '@maks11060/crypto'
+ *
  * const priv = await importKeyRaw({
  *   alg: 'Ed25519',
  *   public: '372375338143fc7958125af71e3d36220dccc442702657c128f89960508491ab',
@@ -194,4 +197,27 @@ export const importKeyRaw = (options: ImportKeyRaw): Promise<CryptoKey> => {
     default:
       throw new Error(`key algorithm not supported ${options.alg}`)
   }
+}
+
+/**
+ * import key pair in raw format to {@linkcode CryptoKey}
+ *
+ * @example
+ * ```ts
+ * import {importKeyPairRaw} from '@maks11060/crypto'
+ *
+ * const keys = await importKeyPairRaw({
+ *   alg: 'Ed25519',
+ *   public: '372375338143fc7958125af71e3d36220dccc442702657c128f89960508491ab',
+ *   private: '88f913625ae98c00193cbc91d7b6fa36cd99d56379485937fb408a7500eaf2e9',
+ * })
+ * ```
+ */
+export const importKeyPairRaw = async (
+  options: ImportKeyPairRaw
+): Promise<CryptoKeyPair> => {
+  const privateKey = await importKeyRaw(options)
+  const {private: _, ...rest} = options
+  const publicKey = await importKeyRaw(rest)
+  return {privateKey, publicKey} as CryptoKeyPair
 }

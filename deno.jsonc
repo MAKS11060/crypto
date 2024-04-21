@@ -10,5 +10,10 @@
   "imports": {
     "@std/bytes": "jsr:@std/bytes@^0.223.0",
     "@std/encoding": "jsr:@std/encoding@^0.223.0"
+  },
+  "publish": {
+    "exclude": [
+      "src/**/*.test.ts"
+    ]
   }
 }

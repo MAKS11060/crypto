@@ -1,10 +1,10 @@
 # Crypto utils
 
-<!--
-```ts
-import {} from 'jsr:@maks11060/crypto'
-```
--->
+[![JSR][JSR badge]][JSR]
+
+[JSR]: https://jsr.io/badges/@maks11060/crypto
+[JSR badge]: https://jsr.io/badges/@maks11060/crypto
+
 
 ## jwk
 

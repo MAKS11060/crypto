@@ -13,6 +13,7 @@
  * @module
  */
 
+export * from './src/aes.ts'
 export * from './src/jwk.ts'
 export * from './src/keys.ts'
 

@@ -3,7 +3,7 @@
 [![JSR][JSR badge]][JSR]
 
 [JSR]: https://jsr.io/@maks11060/crypto
-[JSR badge]: https://jsr.io/badges/@maks11060/crypto
+[JSR badge]: https://jsr.io/badges/@maks11060/crypto?v=0.1.1
 
 
 ## jwk

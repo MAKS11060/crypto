@@ -5,7 +5,8 @@
   "exports": {
     ".": "./mod.ts",
     "./jwk": "./src/jwk.ts",
-    "./keys": "./src/keys.ts"
+    "./keys": "./src/keys.ts",
+    "./aes": "./src/aes.ts"
   },
   "imports": {
     "@std/bytes": "jsr:@std/bytes@^0.223.0",
@@ -13,6 +14,7 @@
   },
   "publish": {
     "exclude": [
+      ".github",
       "src/**/*.test.ts"
     ]
   }

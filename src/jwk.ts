@@ -25,8 +25,18 @@ interface ImportKeyPairRaw extends ImportKeyRaw {
   private: string
 }
 
+interface ExportKeyResult {
+  public: string
+  private: string
+}
+
+interface ImportPubKeyRawResult {
+  x: string
+  y?: string
+}
+
 /** Get options by alg */
-export const keyAlg = (alg: KeyAlg) => {
+export const keyAlg = (alg: KeyAlg): Algorithm | EcKeyAlgorithm => {
   switch (alg) {
     case 'Ed25519':
       return {name: 'Ed25519'}
@@ -55,7 +65,7 @@ export const keyAlg = (alg: KeyAlg) => {
  * keys.public // 372375..eaf2e9
  * ```
  */
-export const exportKeyRaw = async (key: CryptoKey) => {
+export const exportKeyRaw = async (key: CryptoKey): Promise<ExportKeyResult> => {
   if (key.type !== 'private') throw new Error(`key type must be a 'private'`)
   // https://openid.net/specs/draft-jones-json-web-key-03.html#anchor7
   const jwk = await crypto.subtle.exportKey('jwk', key)
@@ -83,7 +93,7 @@ export const exportKeyRaw = async (key: CryptoKey) => {
   throw new Error('Unsupported key algorithm')
 }
 
-const importPubKeyRaw = (options: ImportPubKeyRaw) => {
+const importPubKeyRaw = (options: ImportPubKeyRaw): ImportPubKeyRawResult => {
   switch (options.alg) {
     case 'Ed25519': {
       const xy = decodeHex(options.public)

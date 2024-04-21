@@ -1,8 +1,5 @@
 import {decodeHex} from '@std/encoding/hex'
 
-const decoder = new TextDecoder()
-const encoder = new TextEncoder()
-
 interface AesKeyOptions {
   /** @default 256 */
   length?: 128 | 196 | 256
@@ -10,8 +7,16 @@ interface AesKeyOptions {
   ivLen?: 12 | 16
 }
 
+interface AesGcmKey {
+  key: CryptoKey
+  iv: ArrayBuffer
+}
+
+
 /** generate key for `aes` encrypt */
-export const generateKeyAesGcm = async (options: AesKeyOptions = {}) => {
+export const generateKeyAesGcm = async (
+  options: AesKeyOptions = {}
+): Promise<AesGcmKey> => {
   options.length ??= 256
   options.ivLen ??= 12
 
@@ -34,7 +39,9 @@ interface ImportAesGcmOptions {
 }
 
 /** import key for `aes` encrypt */
-export const importAesGcm = async (options: ImportAesGcmOptions) => {
+export const importAesGcm = async (
+  options: ImportAesGcmOptions
+): Promise<AesGcmKey> => {
   const iv = decodeHex(options.iv)
   const key = await crypto.subtle.importKey(
     'raw',
@@ -46,9 +53,18 @@ export const importAesGcm = async (options: ImportAesGcmOptions) => {
   return {key, iv}
 }
 
-interface aesEncryptConfig {
+interface AesEncryptConfig {
   key: CryptoKey
   iv: ArrayBuffer
+}
+
+interface AesEncryptString {
+  encrypt(data: string): Promise<ArrayBuffer>
+  decrypt(data: ArrayBuffer): Promise<string>
+}
+interface AesEncryptObject<T extends object> {
+  encrypt(data: T): Promise<ArrayBuffer>
+  decrypt(data: ArrayBuffer): Promise<T>
 }
 
 /**
@@ -63,7 +79,10 @@ interface aesEncryptConfig {
  * console.log(str)
  * ```
  */
-export const aesEncryptString = ({key, iv}: aesEncryptConfig) => {
+export const aesEncryptString = ({key, iv}: AesEncryptConfig): AesEncryptString => {
+  const decoder = new TextDecoder()
+  const encoder = new TextEncoder()
+
   const encrypt = async (data: string): Promise<ArrayBuffer> => {
     return await crypto.subtle.encrypt(
       {name: key.algorithm.name, iv},
@@ -99,7 +118,7 @@ export const aesEncryptString = ({key, iv}: aesEncryptConfig) => {
  * console.log(name)
  * ```
  */
-export const aesEncryptObject = <T extends object>(init: aesEncryptConfig) => {
+export const aesEncryptObject = <T extends object>(init: AesEncryptConfig): AesEncryptObject<T> => {
   const aes = aesEncryptString(init)
 
   const encrypt = (data: T): Promise<ArrayBuffer> => {
@@ -112,4 +131,3 @@ export const aesEncryptObject = <T extends object>(init: aesEncryptConfig) => {
 
   return {encrypt, decrypt}
 }
-

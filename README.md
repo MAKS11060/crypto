@@ -1,10 +1,12 @@
 # Crypto utils
 
 [![JSR][JSR badge]][JSR]
+[![Publish workflow][Publish workflow badge]][Publish workflow]
 
 [JSR]: https://jsr.io/@maks11060/crypto
 [JSR badge]: https://jsr.io/badges/@maks11060/crypto?v=0.1.1
-
+[Publish workflow]: https://github.com/MAKS11060/crypto/actions/workflows/publish.yml
+[Publish workflow badge]: https://github.com/maks11060/crypto/actions/workflows/publish.yml/badge.svg
 
 ## jwk
 

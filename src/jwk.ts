@@ -59,13 +59,17 @@ export const keyAlg = (alg: KeyAlg): Algorithm | EcKeyAlgorithm => {
  *
  * @example
  * ```ts
+ * import {exportKeyRaw} from '@maks11060/crypto'
+ *
  * const keyPair = await generateKeyPair('Ed25519')
- * const keys = await encodeKeyRaw(keyPair.privateKey)
+ * const keys = await exportKeyRaw(keyPair.privateKey)
  * keys.private // 88f913..8491ab
  * keys.public // 372375..eaf2e9
  * ```
  */
-export const exportKeyRaw = async (key: CryptoKey): Promise<ExportKeyResult> => {
+export const exportKeyRaw = async (
+  key: CryptoKey
+): Promise<ExportKeyResult> => {
   if (key.type !== 'private') throw new Error(`key type must be a 'private'`)
   // https://openid.net/specs/draft-jones-json-web-key-03.html#anchor7
   const jwk = await crypto.subtle.exportKey('jwk', key)

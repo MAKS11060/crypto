@@ -12,7 +12,6 @@ interface AesGcmKey {
   iv: ArrayBuffer
 }
 
-
 /** generate key for `aes` encrypt */
 export const generateKeyAesGcm = async (
   options: AesKeyOptions = {}
@@ -79,7 +78,10 @@ interface AesEncryptObject<T extends object> {
  * console.log(str)
  * ```
  */
-export const aesEncryptString = ({key, iv}: AesEncryptConfig): AesEncryptString => {
+export const aesEncryptString = ({
+  key,
+  iv,
+}: AesEncryptConfig): AesEncryptString => {
   const decoder = new TextDecoder()
   const encoder = new TextEncoder()
 
@@ -118,7 +120,9 @@ export const aesEncryptString = ({key, iv}: AesEncryptConfig): AesEncryptString 
  * console.log(name)
  * ```
  */
-export const aesEncryptObject = <T extends object>(init: AesEncryptConfig): AesEncryptObject<T> => {
+export const aesEncryptObject = <T extends object>(
+  init: AesEncryptConfig
+): AesEncryptObject<T> => {
   const aes = aesEncryptString(init)
 
   const encrypt = (data: T): Promise<ArrayBuffer> => {

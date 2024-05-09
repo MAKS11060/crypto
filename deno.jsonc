@@ -1,21 +1,19 @@
 {
   "name": "@maks11060/crypto",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "lock": false,
+  "imports": {
+    "@std/bytes": "jsr:@std/bytes@^0.224.0",
+    "@std/encoding": "jsr:@std/encoding@^0.224.0"
+  },
   "exports": {
     ".": "./mod.ts",
-    "./jwk": "./src/jwk.ts",
-    "./keys": "./src/keys.ts",
     "./aes": "./src/aes.ts"
-  },
-  "imports": {
-    "@std/bytes": "jsr:@std/bytes@^0.223.0",
-    "@std/encoding": "jsr:@std/encoding@^0.223.0"
   },
   "publish": {
     "exclude": [
       ".github",
-      "src/**/*.test.ts"
+      "**/*.test.ts"
     ]
   }
 }

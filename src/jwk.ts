@@ -1,61 +1,16 @@
 import {concat} from '@std/bytes/concat'
 import {decodeBase64Url, encodeBase64Url} from '@std/encoding/base64url'
 import {decodeHex, encodeHex} from '@std/encoding/hex'
-
-export type KeyAlg =
-  | 'Ed25519'
-  | 'P-256'
-  | 'ES256'
-  | 'P-384'
-  | 'ES384'
-  | 'P-521'
-  | 'ES512'
-
-interface ImportPubKeyRaw {
-  alg: KeyAlg
-  public: string
-}
-
-interface ImportKeyRaw extends ImportPubKeyRaw {
-  private?: string
-  extractable?: boolean
-}
-
-interface ImportKeyPairRaw extends ImportKeyRaw {
-  private: string
-}
-
-interface ExportKeyResult {
-  public: string
-  private: string
-}
-
-interface ImportPubKeyRawResult {
-  x: string
-  y?: string
-}
-
-/** Get options by alg */
-export const keyAlg = (alg: KeyAlg): Algorithm | EcKeyAlgorithm => {
-  switch (alg) {
-    case 'Ed25519':
-      return {name: 'Ed25519'}
-    case 'P-256':
-    case 'ES256':
-      return {name: 'ECDSA', namedCurve: 'P-256'}
-    case 'P-384':
-    case 'ES384':
-      return {name: 'ECDSA', namedCurve: 'P-384'}
-    case 'P-521':
-    case 'ES512':
-      return {name: 'ECDSA', namedCurve: 'P-521'}
-    default:
-      throw new Error(`key algorithm not supported ${alg}`)
-  }
-}
+import type {
+  ExportKeyResult,
+  ImportKeyPairRaw,
+  ImportKeyRaw,
+  ImportPubKeyRaw,
+  ImportPubKeyRawResult,
+} from './utils.ts'
 
 /**
- * export {@linkcode CryptoKey private key} to raw format
+ * Export a {@linkcode CryptoKey private key} to raw format
  *
  * @example
  * ```ts
@@ -66,6 +21,10 @@ export const keyAlg = (alg: KeyAlg): Algorithm | EcKeyAlgorithm => {
  * keys.private // 88f913..8491ab
  * keys.public // 372375..eaf2e9
  * ```
+ *
+ * @param {CryptoKey} key - The private key to export.
+ * @returns {Promise<ExportKeyResult>} A Promise that resolves to an object containing the exported public and private keys in hexadecimal format.
+ * @throws {Error} If the key type is not 'private' or the key algorithm is not supported.
  */
 export const exportKeyRaw = async (
   key: CryptoKey
@@ -94,7 +53,19 @@ export const exportKeyRaw = async (
     }
   }
 
-  throw new Error('Unsupported key algorithm')
+  // TODO: add import
+  // if (key.algorithm.name === 'ECDH') {
+  //   const x = decodeBase64Url(jwk.x!)
+  //   const y = decodeBase64Url(jwk.y!)
+  //   const d = decodeBase64Url(jwk.d!)
+  //   const xy = concat([x, y])
+  //   return {
+  //     public: encodeHex(xy),
+  //     private: encodeHex(d),
+  //   }
+  // }
+
+  throw new Error(`key algorithm not supported '${key.algorithm.name}'`)
 }
 
 const importPubKeyRaw = (options: ImportPubKeyRaw): ImportPubKeyRawResult => {

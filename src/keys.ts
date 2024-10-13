@@ -1,4 +1,4 @@
-import {keyAlg, type KeyAlg} from './jwk.ts'
+import {type KeyAlg, keyAlg, keyAlgUsage} from './utils.ts'
 
 /**
  * Generate key pair.
@@ -11,9 +11,10 @@ import {keyAlg, type KeyAlg} from './jwk.ts'
  * ```
  */
 export const generateKeyPair = async (alg: KeyAlg): Promise<CryptoKeyPair> => {
-  const keys = await crypto.subtle.generateKey(keyAlg(alg), true, [
-    'sign',
-    'verify',
-  ])
+  const keys = await crypto.subtle.generateKey(
+    keyAlg(alg),
+    true,
+    keyAlgUsage(alg)
+  )
   return keys as CryptoKeyPair
 }

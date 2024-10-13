@@ -1,6 +1,6 @@
 {
   "name": "@maks11060/crypto",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "lock": false,
   "imports": {
     "@std/bytes": "jsr:@std/bytes@1",

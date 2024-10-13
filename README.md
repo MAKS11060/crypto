@@ -9,7 +9,7 @@
 [CI badge]: https://github.com/maks11060/crypto/actions/workflows/ci.yml/badge.svg
 
 
-- [Crypto utils](#crypto-utils)
+- [Crypto utils for `EC` keys](#crypto-utils-for-ec-keys)
   - [Install](#install)
   - [Usage](#usage)
     - [Import Key](#import-key)
@@ -17,7 +17,6 @@
     - [Generate / Export Key](#generate--export-key)
     - [X25519](#x25519)
   - [Algorithms](#algorithms)
-
 
 
 Provide crypto utilities for importing, exporting, and generating EC keys.

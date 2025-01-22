@@ -1,26 +1,23 @@
-# Crypto utils for `EC` keys
+# WebCrypto keys utilities
 
 [![JSR][JSR badge]][JSR]
-[![CI][CI badge]][CI]
+[![CI](https://github.com/MAKS11060/crypto/actions/workflows/ci.yml/badge.svg)](https://github.com/MAKS11060/crypto/actions/workflows/ci.yml)
 
 [JSR]: https://jsr.io/@maks11060/crypto
 [JSR badge]: https://jsr.io/badges/@maks11060/crypto
-[CI]: https://github.com/MAKS11060/crypto/actions/workflows/ci.yml
-[CI badge]: https://github.com/maks11060/crypto/actions/workflows/ci.yml/badge.svg
 
 
-- [Crypto utils for `EC` keys](#crypto-utils-for-ec-keys)
+This library provides a set of functions for generating, importing, and exporting cryptographic keys and key pairs
+
+- [WebCrypto keys utilities](#webcrypto-keys-utilities)
+  - [Key Features](#key-features)
   - [Install](#install)
   - [Usage](#usage)
-    - [Import Key](#import-key)
-    - [Import Key Pair](#import-key-pair)
-    - [Generate / Export Key](#generate--export-key)
-    - [X25519](#x25519)
-  - [Algorithms](#algorithms)
+    - [Algorithms](#algorithms)
 
-
-Provide crypto utilities for importing, exporting, and generating EC keys.
-
+## Key Features
+ - Import and export keys in different formats such as `hex`, `raw`, and `jwk`
+ - Algorithm Support: `Ed25519`, `P-256`,` P-384`,` P-521`, and `X25519`
 
 ## Install
 ```ts
@@ -33,74 +30,41 @@ import {generateKeyPair} from 'jsr:@maks11060/crypto'
 
 ## Usage
 
-### Import Key
-
-Import a public or private key from a raw format.
-
 ```ts
-import {importKeyRaw} from '@maks11060/crypto'
+import {exportKey, generateKeyPair, importKey, importKeyPair} from '@maks11060/crypto'
 
-const pub = await importKeyRaw({
-  alg: 'Ed25519',
-  public: '8a4f5d16b246de737965a97ee997f4e4080ccf361d3a16178b689b10321453d4'
-})
+const keys = await generateKeyPair('Ed25519')
+keys.privateKey // CryptoKey
+keys.publicKey // CryptoKey
 
-const priv = await importKeyRaw({
-  alg: 'Ed25519',
-  public: '8a4f5d16b246de737965a97ee997f4e4080ccf361d3a16178b689b10321453d4',
-  private: '3ac0c3792c389759ae813828b9efffb4bdc13b47b71cfab869f365423b3c4e57'
-})
+// export key pair
+const {privateKey, publicKey} = await exportKey('hex', keys)
+console.log(privateKey) // e6cc65db53dcdce37d095c5bd792a5114e8ca575190979dfaea1afa6da1daef9
+console.log(publicKey) // b504196a380c1dcb0526c88df4f947b8d8e32f3e7a5ac57d852f439fc4fc80bc
+
+// export single key
+const privateKey_2 = await exportKey('hex', keys.privateKey)
+const publicKey_2 = await exportKey('hex', keys.publicKey)
+console.log(privateKey_2) // e6cc65db53dcdce37d095c5bd792a5114e8ca575190979dfaea1afa6da1daef9
+console.log(publicKey_2) // b504196a380c1dcb0526c88df4f947b8d8e32f3e7a5ac57d852f439fc4fc80bc
+
+// import private key
+await importKey('hex', {alg: 'Ed25519', publicKey, privateKey})
+
+// import public key
+await importKey('hex', {alg: 'Ed25519', publicKey})
+
+// import key pair
+await importKeyPair('hex', {alg: 'Ed25519', publicKey, privateKey})
 ```
 
-### Import Key Pair
+### Algorithms
+| Algorithm        | generateKeyPair | exportKey | importKey |
+| ---------------- | :-------------: | :-------: | :-------: |
+| `Ed25519`        |        ✔        |     ✔     |     ✔     |
+| `X25519`         |        ✔        |     ✔     |           |
+| `P-256`, `ES256` |        ✔        |     ✔     |     ✔     |
+| `P-384`, `ES384` |        ✔        |     ✔     |     ✔     |
+| `P-521`, `ES512` |        ✔        |   ✔ 1*    |   ✔ 1*    |
 
-Import a key pair from a raw format.
-
-```ts
-import {importKeyPairRaw} from '@maks11060/crypto'
-
-const keys = await importKeyPairRaw({
-  alg: 'Ed25519',
-  public: '8a4f5d16b246de737965a97ee997f4e4080ccf361d3a16178b689b10321453d4',
-  private: '3ac0c3792c389759ae813828b9efffb4bdc13b47b71cfab869f365423b3c4e57'
-})
-
-console.log(keys) // {privateKey, publicKey}
-```
-
-### Generate / Export Key
-
-Generate a new key pair and export it to a raw format.
-
-```ts
-import {generateKeyPair, exportKeyRaw} from '@maks11060/crypto'
-
-const keyPair = await generateKeyPair('Ed25519')
-const keys = await exportKeyRaw(keyPair.privateKey)
-
-console.log(keys.private) // 88f913..8491ab
-console.log(keys.public) // 372375..eaf2e9
-```
-
-### X25519
-
-Generate a new `X25519` key pair and export it to a raw format.
-
-```ts
-import {generateKeyPair, exportKeyRawX25519} from '@maks11060/crypto'
-
-const keyPair = await generateKeyPair('X25519')
-const keys = await exportKeyRawX25519(keyPair)
-
-console.log(keys.private) // e54f32..1234ab
-console.log(keys.public) // 372375..eaf2e9
-```
-
-## Algorithms
-| Algorithm         | Deno  | Node.js |
-| ----------------- | :---: | :-----: |
-| `Ed25519`         |   ✔   |    ✔    |
-| `X25519`          |   ✔   |    ✔    |
-| `P-256` / `ES256` |   ✔   |    ✔    |
-| `P-384` / `ES384` |   ✔   |    ✔    |
-| `P-521` / `ES512` |       |    ✔    |
+1. Deno is not supported

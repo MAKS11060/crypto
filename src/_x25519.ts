@@ -1,6 +1,3 @@
-import {encodeHex} from '@std/encoding/hex'
-import type {ExportKeyResult} from './utils.ts'
-
 export const extractX25519PrivateKeyRaw = (pkcs8: Uint8Array): Uint8Array => {
   let index = 0
 
@@ -55,37 +52,4 @@ export const extractX25519PrivateKeyRaw = (pkcs8: Uint8Array): Uint8Array => {
   const privateKey = pkcs8.slice(index, index + privateKeyLength)
 
   return privateKey
-}
-
-/**
- * Exports the `public` and `private` keys of a given {@linkcode CryptoKeyPair} in `raw` format.
- *
- * @example
- * ```ts
- * import {exportKeyRawX25519, generateKeyPair} from '@maks11060/crypto'
- *
- * const keyPair = await generateKeyPair('X25519')
- * const keys = await exportKeyRawX25519(keyPair)
- * keys.private // 'hexadecimal representation of the private key'
- * keys.public // 'hexadecimal representation of the public key'
- * ```
- *
- * @param {CryptoKeyPair} keys - The CryptoKeyPair object containing the `public` and `private` keys.
- * @returns {Promise<ExportKeyResult>} A Promise that resolves to an object containing the exported `public` and `private` keys in hexadecimal format.
- * @throws {Error} If the key algorithm is not '`X25519`'.
- */
-export const exportKeyRawX25519 = async (
-  keys: CryptoKeyPair
-): Promise<ExportKeyResult> => {
-  if (keys.privateKey.algorithm.name === 'X25519') {
-    const pub = await crypto.subtle.exportKey('raw', keys.publicKey)
-    const v = await crypto.subtle.exportKey('pkcs8', keys.privateKey)
-    const d = extractX25519PrivateKeyRaw(new Uint8Array(v))
-    return {
-      public: encodeHex(pub),
-      private: encodeHex(d),
-    }
-  }
-
-  throw new Error(`The key algorithm must be 'X25519'`)
 }

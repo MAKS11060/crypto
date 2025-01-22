@@ -1,4 +1,4 @@
-const isDeno = 'Deno' in globalThis
+export const isDeno = 'Deno' in globalThis
 
 export const algList = {
   Ed25519: true,
@@ -24,34 +24,20 @@ export type KeyAlg =
 /**
  * Checks if a given string is a valid key algorithm.
  *
+ * @example
+ * ```ts
+ * import {isKeyAlg} from '@maks11060/crypto'
+ *
+ * let alg: string = 'P-256'
+ * if (isKeyAlg(alg)) {
+ *   alg === 'P-256' // TS Check
+ * }
+ * ```
+ *
  * @param {string} alg - The algorithm to check.
  * @returns {alg is KeyAlg} - True if the algorithm is a valid key algorithm, false otherwise.
  */
 export const isKeyAlg = (alg: string): alg is KeyAlg => alg in algList
-
-export interface ImportPubKeyRaw {
-  alg: KeyAlg
-  public: string
-}
-
-export interface ImportKeyRaw extends ImportPubKeyRaw {
-  private?: string
-  extractable?: boolean
-}
-
-export interface ImportKeyPairRaw extends ImportKeyRaw {
-  private: string
-}
-
-export interface ExportKeyResult {
-  public: string
-  private: string
-}
-
-export interface ImportPubKeyRawResult {
-  x: string
-  y?: string
-}
 
 /** Get options by alg */
 export const keyAlg = (alg: KeyAlg): Algorithm | EcKeyAlgorithm => {

@@ -1,9 +1,8 @@
-#!/usr/bin/env -S deno run -A --watch-hmr
-
 import {concat} from '@std/bytes/concat'
 import {decodeBase64Url} from '@std/encoding/base64url'
 import {encodeHex} from '@std/encoding/hex'
-import {extractX25519PrivateKeyRaw} from './x25519.ts'
+import {extractX25519PrivateKeyRaw} from './_x25519.ts'
+import {isDeno} from './utils.ts'
 
 type ExportKey = {
   (format: 'hex', key: CryptoKey): Promise<string>
@@ -23,8 +22,6 @@ type ExportKey = {
     publicKey: JsonWebKey
   }>
 }
-
-const isDeno = 'Deno' in globalThis
 
 const isPair = (keys: CryptoKey | CryptoKeyPair): keys is CryptoKeyPair => {
   return 'privateKey' in keys && 'publicKey' in keys

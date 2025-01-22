@@ -1,7 +1,7 @@
 import {encodeHex} from '@std/encoding/hex'
 import type {ExportKeyResult} from './utils.ts'
 
-const extractX25519PrivateKeyRaw = (pkcs8: Uint8Array): Uint8Array => {
+export const extractX25519PrivateKeyRaw = (pkcs8: Uint8Array): Uint8Array => {
   let index = 0
 
   if (pkcs8[index++] !== 0x30) {

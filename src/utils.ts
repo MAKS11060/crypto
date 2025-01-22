@@ -1,12 +1,33 @@
+const isDeno = 'Deno' in globalThis
+
+export const algList = {
+  Ed25519: true,
+  ES256: true,
+  ES384: true,
+  ES512: !isDeno,
+  'P-256': true,
+  'P-384': true,
+  'P-521': !isDeno,
+  X25519: true,
+} satisfies Record<KeyAlg, boolean>
+
 export type KeyAlg =
   | 'Ed25519'
-  | 'X25519' // Curve25519?
+  | 'ES256' // alias
+  | 'ES384' // alias
+  | 'ES512' // alias
   | 'P-256'
-  | 'ES256'
   | 'P-384'
-  | 'ES384'
   | 'P-521'
-  | 'ES512'
+  | 'X25519'
+
+/**
+ * Checks if a given string is a valid key algorithm.
+ *
+ * @param {string} alg - The algorithm to check.
+ * @returns {alg is KeyAlg} - True if the algorithm is a valid key algorithm, false otherwise.
+ */
+export const isKeyAlg = (alg: string): alg is KeyAlg => alg in algList
 
 export interface ImportPubKeyRaw {
   alg: KeyAlg

@@ -10,10 +10,13 @@ import {type KeyAlg, keyAlg, keyAlgUsage} from './utils.ts'
  * const keys = await generateKeyPair('Ed25519')
  * ```
  */
-export const generateKeyPair = async (alg: KeyAlg): Promise<CryptoKeyPair> => {
+export const generateKeyPair = async (
+  alg: KeyAlg,
+  extractable: boolean = true
+): Promise<CryptoKeyPair> => {
   const keys = await crypto.subtle.generateKey(
     keyAlg(alg),
-    true,
+    extractable,
     keyAlgUsage(alg)
   )
   return keys as CryptoKeyPair

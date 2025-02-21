@@ -39,6 +39,12 @@ export type KeyAlg =
  */
 export const isKeyAlg = (alg: string): alg is KeyAlg => alg in algList
 
+export const isPair = (
+  keys: CryptoKey | CryptoKeyPair
+): keys is CryptoKeyPair => {
+  return 'privateKey' in keys && 'publicKey' in keys
+}
+
 /** Get options by alg */
 export const keyAlg = (alg: KeyAlg): Algorithm | EcKeyAlgorithm => {
   switch (alg) {

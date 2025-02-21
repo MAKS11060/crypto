@@ -14,10 +14,7 @@ type ImportKey = {
   ): Promise<CryptoKey>
   (
     format: 'raw',
-    options: ImportKeyOptions & {
-      publicKey: Uint8Array
-      privateKey?: Uint8Array
-    }
+    options: ImportKeyOptions & {publicKey: Uint8Array; privateKey?: Uint8Array}
   ): Promise<CryptoKey>
 }
 
@@ -28,10 +25,7 @@ type ImportKeyPair = {
   ): Promise<CryptoKeyPair>
   (
     format: 'raw',
-    options: ImportKeyOptions & {
-      publicKey: Uint8Array
-      privateKey: Uint8Array
-    }
+    options: ImportKeyOptions & {publicKey: Uint8Array; privateKey: Uint8Array}
   ): Promise<CryptoKeyPair>
 }
 
@@ -131,11 +125,11 @@ export const importKey: ImportKey = (format, options): Promise<any> => {
     options.alg,
     format === 'hex'
       ? decodeHex(options.publicKey as string)
-      : new Uint8Array(options.publicKey as ArrayBuffer),
+      : new Uint8Array(options.publicKey as Uint8Array),
     options.privateKey
       ? format === 'hex'
         ? decodeHex(options.privateKey as string)
-        : new Uint8Array(options.privateKey as ArrayBuffer)
+        : new Uint8Array(options.privateKey as Uint8Array)
       : undefined
   )
 

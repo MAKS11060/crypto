@@ -9,7 +9,7 @@ interface AesKeyOptions {
 
 interface AesGcmKey {
   key: CryptoKey
-  iv: ArrayBuffer
+  iv: Uint8Array
 }
 
 /** generate key for `aes` encrypt */

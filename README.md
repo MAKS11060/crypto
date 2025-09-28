@@ -1,4 +1,4 @@
-# WebCrypto keys utilities
+# WebCrypto Key Utilities
 
 [![JSR][JSR badge]][JSR]
 [![CI](https://github.com/MAKS11060/crypto/actions/workflows/ci.yml/badge.svg)](https://github.com/MAKS11060/crypto/actions/workflows/ci.yml)
@@ -6,18 +6,15 @@
 [JSR]: https://jsr.io/@maks11060/crypto
 [JSR badge]: https://jsr.io/badges/@maks11060/crypto
 
-This library provides a set of functions for generating, importing, and exporting cryptographic keys and key pairs
+A lightweight library for working with WebCrypto keys: generate, import, export, and convert cryptographic keys and key
+pairs in various formats.
 
-- [WebCrypto keys utilities](#webcrypto-keys-utilities)
-  - [Key Features](#key-features)
-  - [Install](#install)
-  - [Usage](#usage)
-    - [Algorithms](#algorithms)
+## Features
 
-## Key Features
-
-- Import and export keys in different formats such as `hex`, `raw`, and `jwk`
-- Algorithm Support: `Ed25519`, `P-256`,`P-384`,`P-521`, and `X25519`
+- Generate cryptographic key pairs for modern algorithms
+- Import and export keys and key pairs in `hex`, `raw`, and `jwk` formats
+- Convert between supported formats
+- Supports `Ed25519`, `X25519`, `P-256`, `P-384`, `P-521`, and `RSASSA-PKCS1-v1_5`
 
 ## Install
 

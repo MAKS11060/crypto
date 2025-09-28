@@ -12,18 +12,18 @@ import {type KeyAlg, keyAlg, keyAlgUsage} from './utils.ts'
  * keys.publicKey // CryptoKey
  * ```
  *
- * @param {KeyAlg} alg - The key algorithm to use for generating the key pair.
- * @param {boolean} [extractable=true] Whether the generated keys should be extractable.
- * @returns {Promise<CryptoKeyPair>} A promise that resolves to the generated cryptographic key pair.
+ * @param alg - The key algorithm to use for generating the key pair.
+ * @param extractable - Whether the generated keys should be extractable.
+ * @returns A promise that resolves to the generated cryptographic key pair.
  */
 export const generateKeyPair = async (
   alg: KeyAlg,
-  extractable: boolean = true
+  extractable: boolean = true,
 ): Promise<CryptoKeyPair> => {
   const keys = await crypto.subtle.generateKey(
     keyAlg(alg),
     extractable,
-    keyAlgUsage(alg)
+    keyAlgUsage(alg),
   )
   return keys as CryptoKeyPair
 }

@@ -1,12 +1,11 @@
 import {concat} from '@std/bytes/concat'
 import {decodeBase64Url} from '@std/encoding/base64url'
 import {encodeHex} from '@std/encoding/hex'
-import {extractX25519PrivateKeyRaw} from './_x25519.ts'
-import {isDeno, isPair} from './utils.ts'
+import {isPair, type Uint8Array_} from './utils.ts'
 
 type ExportKey = {
   (format: 'hex', key: CryptoKey): Promise<string>
-  (format: 'raw', key: CryptoKey): Promise<Uint8Array>
+  (format: 'raw', key: CryptoKey): Promise<Uint8Array_>
   (format: 'jwk', key: CryptoKey): Promise<JsonWebKey>
 
   (format: 'hex', key: CryptoKeyPair): Promise<{
@@ -14,8 +13,8 @@ type ExportKey = {
     publicKey: string
   }>
   (format: 'raw', key: CryptoKeyPair): Promise<{
-    privateKey: Uint8Array
-    publicKey: Uint8Array
+    privateKey: Uint8Array_
+    publicKey: Uint8Array_
   }>
   (format: 'jwk', key: CryptoKeyPair): Promise<{
     privateKey: JsonWebKey
@@ -37,13 +36,13 @@ type ExportKey = {
  * console.log(publicKey) // b504196a380c1dcb0526c88df4f947b8d8e32f3e7a5ac57d852f439fc4fc80bc
  * ```
  *
- * @param {string} format - The `format` to export the key in. Can be `hex`, `raw`, or `jwk`.
- * @param {CryptoKey | CryptoKeyPair} key - The cryptographic key to export.
- * @returns {Promise<string | Uint8Array | JsonWebKey | { privateKey: string | Uint8Array | JsonWebKey, publicKey: string | Uint8Array | JsonWebKey }>} - A promise that resolves to the exported key in the specified `format`.
+ * @param format - The `format` to export the key in. Can be `hex`, `raw`, or `jwk`.
+ * @param key - The cryptographic key to export.
+ * @returns A promise that resolves to the exported key in the specified `format`.
  */
 export const exportKey: ExportKey = async (
-  format: string,
-  key: CryptoKey | CryptoKeyPair
+  format: 'jwk' | 'raw' | 'hex',
+  key: CryptoKey | CryptoKeyPair,
 ): Promise<any> => {
   if (isPair(key)) {
     return {
@@ -54,58 +53,32 @@ export const exportKey: ExportKey = async (
 
   // P-256 / P-384 / P-521
   if (key.algorithm.name === 'ECDSA') {
-    if (key.type === 'private') {
-      const jwk = await crypto.subtle.exportKey('jwk', key)
-      if (format === 'raw') return decodeBase64Url(jwk.d!)
-      else if (format === 'hex') return encodeHex(decodeBase64Url(jwk.d!))
-      else return jwk
-    } else {
-      const jwk = await crypto.subtle.exportKey('jwk', key)
-      if (format === 'raw')
-        return concat([decodeBase64Url(jwk.x!), decodeBase64Url(jwk.y!)]) // xy
-      else if (format === 'hex')
-        return encodeHex(
-          concat([decodeBase64Url(jwk.x!), decodeBase64Url(jwk.y!)])
-        )
-      else return jwk
-    }
-  }
-
-  if (key.algorithm.name === 'Ed25519') {
     const jwk = await crypto.subtle.exportKey('jwk', key)
-    if (key.type === 'private') {
-      if (format === 'raw') return decodeBase64Url(jwk.d!)
-      else if (format === 'hex') return encodeHex(decodeBase64Url(jwk.d!))
-      else return jwk
-    } else {
-      if (format === 'raw') return decodeBase64Url(jwk.x!)
-      else if (format === 'hex') return encodeHex(decodeBase64Url(jwk.x!))
-      else return jwk
+    if (format === 'jwk') return jwk
+    if (format === 'raw' || format === 'hex') {
+      const raw = key.type === 'private' //
+        ? decodeBase64Url(jwk.d!)
+        : concat([decodeBase64Url(jwk.x!), decodeBase64Url(jwk.y!)]) // xy
+
+      return format === 'raw' ? raw : encodeHex(raw)
     }
   }
 
-  if (key.algorithm.name === 'X25519') {
-    if (key.type === 'private') {
-      // workaround
-      if (isDeno) {
-        const v = await crypto.subtle.exportKey('pkcs8', key)
-        if (format === 'raw')
-          return extractX25519PrivateKeyRaw(new Uint8Array(v)) // d
-        else if (format === 'hex')
-          return encodeHex(extractX25519PrivateKeyRaw(new Uint8Array(v))) // d
-        else throw new Error('jwk export not implemented')
-      }
+  if (key.algorithm.name === 'Ed25519' || key.algorithm.name === 'X25519') {
+    const jwk = await crypto.subtle.exportKey('jwk', key)
+    if (format === 'jwk') return jwk
+    if (format === 'raw' || format === 'hex') {
+      const raw = key.type === 'private' //
+        ? decodeBase64Url(jwk.d!)
+        : decodeBase64Url(jwk.x!)
 
-      const jwk = await crypto.subtle.exportKey('jwk', key)
-      if (format === 'raw') return decodeBase64Url(jwk.d!)
-      else if (format === 'hex') return encodeHex(decodeBase64Url(jwk.d!))
-      else return jwk
-    } else {
-      const jwk = await crypto.subtle.exportKey('jwk', key)
-      if (format === 'raw') return decodeBase64Url(jwk.x!)
-      else if (format === 'hex') return encodeHex(decodeBase64Url(jwk.x!))
-      else return jwk
+      return format === 'raw' ? raw : encodeHex(raw)
     }
+  }
+
+  if (key.algorithm.name === 'RSASSA-PKCS1-v1_5') {
+    if (format !== 'jwk') throw new Error(`The key export with the RSA algorithm is supported only in jwk format`)
+    return await crypto.subtle.exportKey('jwk', key)
   }
 
   throw new Error(`key algorithm not supported: '${key.algorithm.name}'`)

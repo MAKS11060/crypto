@@ -14,7 +14,7 @@ interface AesGcmKey {
 
 /** generate key for `aes` encrypt */
 export const generateKeyAesGcm = async (
-  options: AesKeyOptions = {}
+  options: AesKeyOptions = {},
 ): Promise<AesGcmKey> => {
   options.length ??= 256
   options.ivLen ??= 12
@@ -26,7 +26,7 @@ export const generateKeyAesGcm = async (
       length: options.length,
     },
     true,
-    ['encrypt', 'decrypt']
+    ['encrypt', 'decrypt'],
   )
   return {key, iv}
 }
@@ -39,7 +39,7 @@ interface ImportAesGcmOptions {
 
 /** import key for `aes` encrypt */
 export const importAesGcm = async (
-  options: ImportAesGcmOptions
+  options: ImportAesGcmOptions,
 ): Promise<AesGcmKey> => {
   const iv = decodeHex(options.iv)
   const key = await crypto.subtle.importKey(
@@ -47,7 +47,7 @@ export const importAesGcm = async (
     decodeHex(options.key),
     {name: 'AES-GCM'},
     true,
-    ['encrypt', 'decrypt']
+    ['encrypt', 'decrypt'],
   )
   return {key, iv}
 }
@@ -89,7 +89,7 @@ export const aesEncryptString = ({
     return await crypto.subtle.encrypt(
       {name: key.algorithm.name, iv},
       key,
-      encoder.encode(data)
+      encoder.encode(data),
     )
   }
 
@@ -97,7 +97,7 @@ export const aesEncryptString = ({
     const out = await crypto.subtle.decrypt(
       {name: key.algorithm.name, iv},
       key,
-      data
+      data,
     )
     return decoder.decode(out)
   }
@@ -121,7 +121,7 @@ export const aesEncryptString = ({
  * ```
  */
 export const aesEncryptObject = <T extends object>(
-  init: AesEncryptConfig
+  init: AesEncryptConfig,
 ): AesEncryptObject<T> => {
   const aes = aesEncryptString(init)
 

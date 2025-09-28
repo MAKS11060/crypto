@@ -1,7 +1,11 @@
 {
+  "lock": false,
   "name": "@maks11060/crypto",
   "version": "0.0.0",
-  "lock": false,
+  "tasks": {
+    "test": "deno test",
+    "ok": "deno fmt --check && deno task test && deno publish --dry-run --allow-dirty"
+  },
   "imports": {
     "@std/bytes": "jsr:@std/bytes@1",
     "@std/encoding": "jsr:@std/encoding@1"
@@ -9,6 +13,14 @@
   "exports": {
     ".": "./mod.ts",
     "./aes": "./src/aes.ts"
+  },
+  "fmt": {
+    "lineWidth": 120,
+    "newLineKind": "system",
+    "quoteProps": "asNeeded",
+    "semiColons": false,
+    "singleQuote": true,
+    "spaceSurroundingProperties": false
   },
   "publish": {
     "exclude": [

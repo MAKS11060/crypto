@@ -1,75 +1,100 @@
-import {assert} from 'jsr:@std/assert@^1.0.10/assert'
-import {assertEquals} from 'jsr:@std/assert@^1.0.10/equals'
+import {expect} from 'jsr:@std/expect/expect'
 import {exportKey} from './exportKey.ts'
+import {importKey} from './importKey.ts'
 import {generateKeyPair} from './keys.ts'
+import {KeyAlg} from './utils.ts'
 
-Deno.test({
-  name: 'exportKey ECDSA',
-  fn: async (t) => {
-    for (const alg of ['P-256', 'P-384', 'P-521'] as const) {
-      await t.step({
-        name: `alg ${alg}`,
-        ignore: 'Deno' in globalThis && alg === 'P-521',
-        fn: async () => {
-          const {privateKey, publicKey} = await generateKeyPair(alg)
+Deno.test('exportKey', async (t) => {
+  const algs: KeyAlg[] = [
+    'Ed25519',
+    'X25519',
+    'P-256',
+    'ES256',
+    'P-384',
+    'ES384',
+    // 'P-521', // DENO: not supported
+    // 'ES512',
+  ]
 
-          // CryptoKey
-          assertEquals(typeof (await exportKey('hex', privateKey)), 'string')
-          assertEquals(typeof (await exportKey('hex', publicKey)), 'string')
+  for (const alg of algs) {
+    const {privateKey, publicKey} = await generateKeyPair(alg)
 
-          assert((await exportKey('raw', privateKey)) instanceof Uint8Array)
-          assert((await exportKey('raw', publicKey)) instanceof Uint8Array)
+    // export
+    await t.step(`exportKey raw ${alg}`, async (t) => {
+      expect(await exportKey('raw', privateKey)).toBeInstanceOf(Uint8Array)
+      expect(await exportKey('raw', publicKey)).toBeInstanceOf(Uint8Array)
+    })
 
-          // CryptoKeyPair
-          const pairHex = await exportKey('hex', {privateKey, publicKey})
-          assertEquals(typeof pairHex.privateKey, 'string')
-          assertEquals(typeof pairHex.publicKey, 'string')
+    await t.step(`exportKey hex ${alg}`, async (t) => {
+      expect(typeof await exportKey('hex', privateKey)).toEqual('string')
+      expect(typeof await exportKey('hex', publicKey)).toEqual('string')
+    })
 
-          const pairRaw = await exportKey('raw', {privateKey, publicKey})
-          assert(pairRaw.privateKey instanceof Uint8Array)
-          assert(pairRaw.publicKey instanceof Uint8Array)
-        },
-      })
-    }
-  },
-})
+    await t.step(`exportKey jwk ${alg}`, async (t) => {
+      const a = await exportKey('jwk', privateKey)
+      const b = await exportKey('jwk', publicKey)
 
-Deno.test('exportKey Ed25519', async () => {
-  const {privateKey, publicKey} = await generateKeyPair('Ed25519')
+      expect(a.kty).toBeTruthy()
+      expect(a.x).toBeTruthy()
+      expect(a.d).toBeTruthy()
+      expect(a.key_ops).toBeTruthy()
 
-  // CryptoKey
-  assertEquals(typeof (await exportKey('hex', privateKey)), 'string')
-  assertEquals(typeof (await exportKey('hex', publicKey)), 'string')
+      expect(b.kty).toBeTruthy()
+      expect(b.x).toBeTruthy()
+      expect(b.d).toBeUndefined()
+      expect(b.key_ops).toBeTruthy()
+    })
 
-  assert((await exportKey('raw', privateKey)) instanceof Uint8Array)
-  assert((await exportKey('raw', publicKey)) instanceof Uint8Array)
+    // export pair
+    await t.step(`exportKey pair raw ${alg}`, async (t) => {
+      const {privateKey: a, publicKey: b} = await exportKey('raw', {publicKey, privateKey})
+      expect(a).toBeInstanceOf(Uint8Array)
+      expect(b).toBeInstanceOf(Uint8Array)
+    })
 
-  // CryptoKeyPair
-  const pairHex = await exportKey('hex', {privateKey, publicKey})
-  assertEquals(typeof pairHex.privateKey, 'string')
-  assertEquals(typeof pairHex.publicKey, 'string')
+    await t.step(`exportKey pair hex ${alg}`, async (t) => {
+      const {privateKey: a, publicKey: b} = await exportKey('hex', {publicKey, privateKey})
+      expect(typeof a).toEqual('string')
+      expect(typeof b).toEqual('string')
+    })
 
-  const pairRaw = await exportKey('raw', {privateKey, publicKey})
-  assert(pairRaw.privateKey instanceof Uint8Array)
-  assert(pairRaw.publicKey instanceof Uint8Array)
-})
+    await t.step(`exportKey pair jwk ${alg}`, async (t) => {
+      const {privateKey: a, publicKey: b} = await exportKey('jwk', {publicKey, privateKey})
 
-Deno.test('exportKey X25519', async () => {
-  const {privateKey, publicKey} = await generateKeyPair('X25519')
+      expect(a.kty).toBeTruthy()
+      expect(a.x).toBeTruthy()
+      expect(a.d).toBeTruthy()
+      expect(a.key_ops).toBeTruthy()
 
-  // CryptoKey
-  assertEquals(typeof (await exportKey('hex', privateKey)), 'string')
-  assertEquals(typeof (await exportKey('hex', publicKey)), 'string')
+      expect(b.kty).toBeTruthy()
+      expect(b.x).toBeTruthy()
+      expect(b.d).toBeUndefined()
+      expect(b.key_ops).toBeTruthy()
+    })
 
-  assert((await exportKey('raw', privateKey)) instanceof Uint8Array)
-  assert((await exportKey('raw', publicKey)) instanceof Uint8Array)
+    // import
+    await t.step(`import raw ${alg}`, async (t) => {
+      const a = await exportKey('raw', privateKey)
+      const b = await exportKey('raw', publicKey)
 
-  // CryptoKeyPair
-  const pairHex = await exportKey('hex', {privateKey, publicKey})
-  assertEquals(typeof pairHex.privateKey, 'string')
-  assertEquals(typeof pairHex.publicKey, 'string')
+      await importKey('raw', {alg, publicKey: b, privateKey: a})
+      await importKey('raw', {alg, publicKey: b})
+    })
 
-  const pairRaw = await exportKey('raw', {privateKey, publicKey})
-  assert(pairRaw.privateKey instanceof Uint8Array)
-  assert(pairRaw.publicKey instanceof Uint8Array)
+    await t.step(`import hex ${alg}`, async (t) => {
+      const a = await exportKey('hex', privateKey)
+      const b = await exportKey('hex', publicKey)
+
+      await importKey('hex', {alg, publicKey: b, privateKey: a})
+      await importKey('hex', {alg, publicKey: b})
+    })
+
+    await t.step(`import jwk ${alg}`, async (t) => {
+      const a = await exportKey('jwk', privateKey)
+      const b = await exportKey('jwk', publicKey)
+
+      await importKey('jwk', a)
+      await importKey('jwk', b)
+    })
+  }
 })

@@ -20,7 +20,7 @@ export const extractX25519PrivateKeyRaw = (pkcs8: Uint8Array): Uint8Array => {
 
   if (pkcs8[index++] !== 0x30) {
     throw new Error(
-      'Invalid format: expected SEQUENCE for algorithm identifier'
+      'Invalid format: expected SEQUENCE for algorithm identifier',
     )
   }
 

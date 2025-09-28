@@ -1,3 +1,5 @@
+export type Uint8Array_ = ReturnType<Uint8Array['slice']>
+
 export const isDeno = 'Deno' in globalThis
 
 export const algList = {
@@ -40,7 +42,7 @@ export type KeyAlg =
 export const isKeyAlg = (alg: string): alg is KeyAlg => alg in algList
 
 export const isPair = (
-  keys: CryptoKey | CryptoKeyPair
+  keys: CryptoKey | CryptoKeyPair,
 ): keys is CryptoKeyPair => {
   return 'privateKey' in keys && 'publicKey' in keys
 }

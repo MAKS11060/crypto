@@ -7,8 +7,8 @@
     "ok": "deno fmt --check && deno task test && deno publish --dry-run --allow-dirty"
   },
   "imports": {
-    "@std/bytes": "jsr:@std/bytes@1",
-    "@std/encoding": "jsr:@std/encoding@1"
+    "@std/bytes": "jsr:@std/bytes@^1.0.6",
+    "@std/encoding": "jsr:@std/encoding@^1.0.10"
   },
   "exports": {
     ".": "./mod.ts",
@@ -25,6 +25,7 @@
   "publish": {
     "exclude": [
       ".github",
+      ".vscode",
       "**/*.test.ts"
     ]
   }

@@ -1,10 +1,7 @@
 # WebCrypto Key Utilities
 
-[![JSR][JSR badge]][JSR]
+[![JSR](https://jsr.io/badges/@maks11060/crypto)](https://jsr.io/@maks11060/crypto)
 [![CI](https://github.com/MAKS11060/crypto/actions/workflows/ci.yml/badge.svg)](https://github.com/MAKS11060/crypto/actions/workflows/ci.yml)
-
-[JSR]: https://jsr.io/@maks11060/crypto
-[JSR badge]: https://jsr.io/badges/@maks11060/crypto
 
 A lightweight library for working with WebCrypto keys: generate, import, export, and convert cryptographic keys and key
 pairs in various formats.

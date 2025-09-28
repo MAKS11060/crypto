@@ -59,14 +59,27 @@ await importKey('hex', {alg: 'Ed25519', publicKey})
 await importKeyPair('hex', {alg: 'Ed25519', publicKey, privateKey})
 ```
 
-### Algorithms
+### Import / Export
 
-| Algorithm        | generateKeyPair | exportKey | importKey |
-| ---------------- | :-------------: | :-------: | :-------: |
-| `Ed25519`        |        ✔        |     ✔     |     ✔     |
-| `X25519`         |        ✔        |     ✔     |           |
-| `P-256`, `ES256` |        ✔        |     ✔     |     ✔     |
-| `P-384`, `ES384` |        ✔        |     ✔     |     ✔     |
-| `P-521`, `ES512` |        ✔        |   ✔ 1*    |   ✔ 1*    |
+|      Algorithm      |    exportKey(format)     |    importKey(format)     |
+| :-----------------: | :----------------------: | :----------------------: |
+|      `Ed25519`      |   `raw`, `hex`, `jwk`    |   `raw`, `hex`, `jwk`    |
+|      `X25519`       |   `raw`, `hex`, `jwk`    |   `raw`, `hex`, `jwk`    |
+|  `P-256`, `ES256`   |   `raw`, `hex`, `jwk`    |   `raw`, `hex`, `jwk`    |
+|  `P-384`, `ES384`   |   `raw`, `hex`, `jwk`    |   `raw`, `hex`, `jwk`    |
+|  `P-521`, `ES512`   | [^1] `raw`, `hex`, `jwk` | [^1] `raw`, `hex`, `jwk` |
+|                     |                          |                          |
+| `RSASSA-PKCS1-v1_5` |          `jwk`           |          `jwk`           |
+|      `RSA-PSS`      |          `jwk`           |          `jwk`           |
 
-1. Deno is not supported
+### generateKeyPair
+
+|    Algorithm     | generateKeyPair(alg) |
+| :--------------: | :------------------: |
+|    `Ed25519`     |          ✔           |
+|     `X25519`     |          ✔           |
+| `P-256`, `ES256` |          ✔           |
+| `P-384`, `ES384` |          ✔           |
+| `P-521`, `ES512` |          ✔           |
+
+[^1]: Deno is not supported

@@ -23,22 +23,32 @@ type ExportKey = {
 }
 
 /**
- * Exports a cryptographic key in the specified format.
+ * Exports a cryptographic key or key pair in the specified format.
+ *
+ * Supported formats:
+ * - `'hex'` — returns a hexadecimal string (or an object with such strings for key pairs)
+ * - `'raw'` — returns a {@linkcode Uint8Array} (or an object with such arrays for key pairs)
+ * - `'jwk'` — returns a JsonWebKey object (or an object with such objects for key pairs)
+ *
+ * Supported algorithms:
+ * - Ed25519, X25519
+ * - ECDSA (P-256, P-384, P-521)
+ * - RSASSA-PKCS1-v1_5 (only 'jwk' format)
  *
  * @example
  * ```ts
  * import {exportKey, generateKeyPair} from '@maks11060/crypto'
  *
  * const keys = await generateKeyPair('Ed25519')
- *
  * const {privateKey, publicKey} = await exportKey('hex', keys)
- * console.log(privateKey) // e6cc65db53dcdce37d095c5bd792a5114e8ca575190979dfaea1afa6da1daef9
- * console.log(publicKey) // b504196a380c1dcb0526c88df4f947b8d8e32f3e7a5ac57d852f439fc4fc80bc
+ * console.log(privateKey) // hex string of the private key
+ * console.log(publicKey)  // hex string of the public key
  * ```
  *
- * @param format - The `format` to export the key in. Can be `hex`, `raw`, or `jwk`.
- * @param key - The cryptographic key to export.
- * @returns A promise that resolves to the exported key in the specified `format`.
+ * @param format The export format: 'hex', 'raw', or 'jwk'.
+ * @param key The key or key pair to export.
+ * @returns A promise that resolves to the exported key or key pair in the specified format.
+ * @throws If the key algorithm is not supported or the format is not allowed for the algorithm.
  */
 export const exportKey: ExportKey = async (
   format: 'jwk' | 'raw' | 'hex',

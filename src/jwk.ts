@@ -3,6 +3,18 @@ type JwkAlgorithmResult = {
   keyUsage: KeyUsage[]
 }
 
+/**
+ * Infers the cryptographic algorithm and key usage options from a given JSON Web Key (JWK).
+ *
+ * This function analyzes the provided JWK object to determine the appropriate Web Crypto API algorithm
+ * parameters and key usages. It supports EC (Elliptic Curve), OKP (Octet Key Pair), and RSA key types,
+ * and maps JWK properties such as `kty`, `crv`, `alg`, `key_ops`, and `use` to corresponding algorithm
+ * options and usages.
+ *
+ * @param jwk - The JSON Web Key to analyze.
+ * @returns An object containing the inferred key usages and algorithm options suitable for Web Crypto API operations.
+ * @throws If the JWK is missing required properties or specifies unsupported key types, curves, or algorithms.
+ */
 export const jwkAlgorithm = (jwk: JsonWebKey): JwkAlgorithmResult => {
   const keyUsage: KeyUsage[] = []
 
@@ -77,64 +89,3 @@ export const jwkAlgorithm = (jwk: JsonWebKey): JwkAlgorithmResult => {
       throw new Error(`Unsupported key type: ${jwk.kty}`)
   }
 }
-
-Deno.test('Test 116903', async (t) => {
-  const options: [any, KeyUsage[]][] = []
-
-  // EC
-  options.push([{name: 'ECDSA', namedCurve: 'P-256'}, ['sign', 'verify']])
-  options.push([{name: 'ECDSA', namedCurve: 'P-384'}, ['sign', 'verify']])
-  // options.push([{name: 'ECDSA', namedCurve: 'P-521'}, ['sign', 'verify']]) // DENO: not impl
-
-  options.push([{name: 'Ed25519'}, ['sign', 'verify']])
-  options.push([{name: 'X25519'}, ['deriveKey', 'deriveBits']])
-
-  // RSA RSASSA-PKCS1-v1_5
-  const hashes = [/* 'SHA-1', */ 'SHA-256', 'SHA-384', 'SHA-512']
-  const publicExponent = new Uint8Array([0x01, 0x00, 0x01])
-  for (let i = 0; i < 3; i++) { // 1024 2048 4096
-    for (const hash of hashes) {
-      options.push([
-        {name: 'RSASSA-PKCS1-v1_5', modulusLength: 2 ** (10 + i), publicExponent, hash},
-        ['sign', 'verify'],
-      ])
-    }
-  }
-
-  // RSA-PSS
-  for (let i = 0; i < 3; i++) { // 1024 2048 4096
-    for (const hash of hashes) {
-      options.push([
-        {name: 'RSA-PSS', modulusLength: 2 ** (10 + i), publicExponent, hash, saltLength: 32},
-        ['sign', 'verify'],
-      ])
-    }
-  }
-
-  // Test
-  for (const [alg, keyUsage] of options) {
-    const key = await crypto.subtle.generateKey(alg, true, keyUsage)
-
-    const testName = JSON.stringify({
-      name: alg.name,
-      namedCurve: alg.namedCurve,
-      modulusLength: alg.modulusLength,
-      hash: alg.hash,
-    })
-    await t.step(`importKey priv ${testName}`, async (t) => {
-      const jwk = await crypto.subtle.exportKey('jwk', key.privateKey)
-
-      const {options, keyUsage} = jwkAlgorithm(jwk)
-      // console.log(options, keyUsage, jwk)
-      await crypto.subtle.importKey('jwk', jwk, options, true, keyUsage)
-    })
-
-    await t.step(`importKey pub ${testName}`, async (t) => {
-      const jwk = await crypto.subtle.exportKey('jwk', key.publicKey)
-
-      const {options, keyUsage} = jwkAlgorithm(jwk)
-      // console.log(options, keyUsage)
-      await crypto.subtle.importKey('jwk', jwk, options, true, keyUsage)
-    })
-  }
-})

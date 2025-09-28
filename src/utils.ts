@@ -36,8 +36,8 @@ export type KeyAlg =
  * }
  * ```
  *
- * @param {string} alg - The algorithm to check.
- * @returns {alg is KeyAlg} - True if the algorithm is a valid key algorithm, false otherwise.
+ * @param alg - The algorithm to check.
+ * @returns True if the algorithm is a valid key algorithm, false otherwise.
  */
 export const isKeyAlg = (alg: string): alg is KeyAlg => alg in algList
 

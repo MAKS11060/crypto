@@ -1,35 +1,6 @@
 #!/usr/bin/env -S deno test -A --watch
 
-// import {exportKey} from './exportKey.ts'
-// import {importKey} from './importKey.ts'
-// import {generateKeyPair} from './keys.ts'
-
-// const {privateKey, publicKey} = await generateKeyPair('Ed25519')
-
-// const privateKeyHEX = await exportKey('hex', privateKey)
-// const publicKeyHEX = await exportKey('hex', publicKey)
-
-// console.log({privateKeyHEX, publicKeyHEX})
-
-// Deno.test({
-//   name: 'importKey hex',
-//   fn: async () => {
-//     const privateKey = await importKey('hex', {
-//       alg: 'Ed25519',
-//       publicKey: publicKeyHEX,
-//       privateKey: privateKeyHEX,
-//     })
-//     const publicKey = await importKey('hex', {
-//       alg: 'Ed25519',
-//       publicKey: publicKeyHEX,
-//     })
-
-//     console.log(privateKey)
-//     console.log(publicKey)
-//   },
-// })
-
-import {assertEquals} from 'jsr:@std/assert@^1.0.10/equals'
+import {expect} from 'jsr:@std/expect/expect'
 import {exportKey} from './exportKey.ts'
 import {importKey} from './importKey.ts'
 import {generateKeyPair} from './keys.ts'
@@ -49,14 +20,14 @@ Deno.test({
           const {privateKey, publicKey} = await exportKey('hex', keys)
 
           const privKey = await importKey('hex', {alg, privateKey, publicKey})
-          assertEquals(keys.privateKey.type, privKey.type)
-          assertEquals(keys.privateKey.algorithm, privKey.algorithm)
-          assertEquals(keys.privateKey.usages, privKey.usages)
+          expect(keys.privateKey.type).toEqual(privKey.type)
+          expect(keys.privateKey.algorithm).toEqual(privKey.algorithm)
+          expect(keys.privateKey.usages).toEqual(privKey.usages)
 
           const pubKey = await importKey('hex', {alg, publicKey})
-          assertEquals(keys.publicKey.algorithm, pubKey.algorithm)
-          assertEquals(keys.publicKey.type, pubKey.type)
-          assertEquals(keys.publicKey.usages, pubKey.usages)
+          expect(keys.publicKey.algorithm).toEqual(pubKey.algorithm)
+          expect(keys.publicKey.type).toEqual(pubKey.type)
+          expect(keys.publicKey.usages).toEqual(pubKey.usages)
         },
       })
     }

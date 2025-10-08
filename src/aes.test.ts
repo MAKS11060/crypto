@@ -1,5 +1,5 @@
 import {exportKey, importKey} from '@maks11060/crypto'
-import {deriveKey, exportSecret, generateAesSecret, importSecret} from '@maks11060/crypto/aes'
+import {aesCodec, aesEncrypt, deriveKey, exportSecret, generateAesSecret, importSecret} from '@maks11060/crypto/aes'
 import {expect} from 'jsr:@std/expect/expect'
 
 Deno.test('AES gen/export(jwk)/import(jwk)', async (t) => {
@@ -54,5 +54,18 @@ Deno.test('Test 159524', async (t) => {
 
 Deno.test('deriveKey', async (t) => {
   const key = await deriveKey('secret')
-  console.log(await crypto.subtle.exportKey('jwk', key))
+  // console.log(await crypto.subtle.exportKey('jwk', key))
+})
+
+//
+Deno.test('initAesEncrypt', async (t) => {
+  const key = await deriveKey('secret')
+  // const aes = initAesEncrypt(key, aesCodec.base64)
+  const aes = aesEncrypt(key, aesCodec.base64url)
+  // const aes = initAesEncrypt(key, aesCodec.hex)
+
+  const enc = await aes.encryptJson('1234')
+  const dec = await aes.decryptJson(enc)
+  // console.log({enc, dec})
+  expect(dec).toBe('1234')
 })

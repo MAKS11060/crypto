@@ -1,14 +1,14 @@
 import {concat} from '@std/bytes/concat'
-import {decodeBase64Url} from '@std/encoding/base64url'
+import {decodeBase64Url, encodeBase64Url} from '@std/encoding/base64url'
 import {encodeHex} from '@std/encoding/hex'
 import {isPair, type Uint8Array_} from './utils.ts'
 
 type ExportKey = {
-  (format: 'hex', key: CryptoKey): Promise<string>
+  (format: 'hex' | 'base64url', key: CryptoKey): Promise<string>
   (format: 'raw', key: CryptoKey): Promise<Uint8Array_>
   (format: 'jwk', key: CryptoKey): Promise<JsonWebKey>
 
-  (format: 'hex', key: CryptoKeyPair): Promise<{
+  (format: 'hex' | 'base64url', key: CryptoKeyPair): Promise<{
     privateKey: string
     publicKey: string
   }>
@@ -27,6 +27,7 @@ type ExportKey = {
  *
  * Supported formats:
  * - `'hex'` — returns a hexadecimal string (or an object with such strings for key pairs)
+ * - `'base64url'` — returns a base64url string (or an object with such strings for key pairs)
  * - `'raw'` — returns a {@linkcode Uint8Array} (or an object with such arrays for key pairs)
  * - `'jwk'` — returns a JsonWebKey object (or an object with such objects for key pairs)
  *
@@ -45,14 +46,14 @@ type ExportKey = {
  * console.log(publicKey)  // hex string of the public key
  * ```
  *
- * @param format The export format: 'hex', 'raw', or 'jwk'.
+ * @param format The export format: 'hex', 'base64url', 'raw', or 'jwk'.
  * @param key The key or key pair to export.
  * @returns A promise that resolves to the exported key or key pair in the specified format.
  * @throws If the key algorithm is not supported or the format is not allowed for the algorithm.
  */
 export const exportKey: ExportKey = async (
-  format: 'jwk' | 'raw' | 'hex',
-  key: CryptoKey | CryptoKeyPair,
+  format,
+  key,
 ): Promise<any> => {
   if (isPair(key)) {
     return {
@@ -65,30 +66,43 @@ export const exportKey: ExportKey = async (
   if (key.algorithm.name === 'ECDSA') {
     const jwk = await crypto.subtle.exportKey('jwk', key)
     if (format === 'jwk') return jwk
-    if (format === 'raw' || format === 'hex') {
+    if (format === 'raw' || format === 'hex' || format === 'base64url') {
       const raw = key.type === 'private' //
         ? decodeBase64Url(jwk.d!)
         : concat([decodeBase64Url(jwk.x!), decodeBase64Url(jwk.y!)]) // xy
 
-      return format === 'raw' ? raw : encodeHex(raw)
+      if (format === 'raw') return raw
+      if (format === 'hex') return encodeHex(raw)
+      if (format === 'base64url') return encodeBase64Url(raw)
     }
   }
 
   if (key.algorithm.name === 'Ed25519' || key.algorithm.name === 'X25519') {
     const jwk = await crypto.subtle.exportKey('jwk', key)
     if (format === 'jwk') return jwk
-    if (format === 'raw' || format === 'hex') {
+    if (format === 'raw' || format === 'hex' || format === 'base64url') {
       const raw = key.type === 'private' //
         ? decodeBase64Url(jwk.d!)
         : decodeBase64Url(jwk.x!)
 
-      return format === 'raw' ? raw : encodeHex(raw)
+      if (format === 'raw') return raw
+      if (format === 'hex') return encodeHex(raw)
+      if (format === 'base64url') return encodeBase64Url(raw)
     }
   }
 
-  if (key.algorithm.name === 'RSASSA-PKCS1-v1_5') {
-    if (format !== 'jwk') throw new Error(`The key export with the RSA algorithm is supported only in jwk format`)
-    return await crypto.subtle.exportKey('jwk', key)
+  switch (key.algorithm.name) {
+    // RSA
+    case 'RSASSA-PKCS1-v1_5':
+    // AES
+    case 'AES-CBC':
+    case 'AES-CTR':
+    case 'AES-GCM':
+    case 'AES-KW':
+      if (format !== 'jwk') {
+        throw new Error(`The key export with the ${key.algorithm.name} algorithm is supported only in jwk format`)
+      }
+      return await crypto.subtle.exportKey('jwk', key)
   }
 
   throw new Error(`key algorithm not supported: '${key.algorithm.name}'`)

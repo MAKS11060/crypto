@@ -1,4 +1,4 @@
-import {encodeBase64Url} from '@std/encoding/base64url'
+import {decodeBase64Url, encodeBase64Url} from '@std/encoding/base64url'
 import {decodeHex} from '@std/encoding/hex'
 import {jwkAlgorithm} from './jwk.ts'
 import type {KeyAlg, Uint8Array_} from './utils.ts'
@@ -28,7 +28,7 @@ type ImportKey = {
     },
   ): Promise<CryptoKey>
   (
-    format: 'hex',
+    format: 'hex' | 'base64url',
     options: ImportKeyOptions & {
       /**
        * Public key in `HEX` encoded
@@ -54,7 +54,7 @@ type ImportKey = {
 
 type ImportKeyPair = {
   (
-    format: 'hex',
+    format: 'hex' | 'base64url',
     options: ImportKeyOptions & {publicKey: string; privateKey: string},
   ): Promise<CryptoKeyPair>
   (
@@ -161,24 +161,28 @@ export const importKey: ImportKey = async (format, ...args): Promise<CryptoKey> 
     },
   ]
 
-  // pub
-  if (typeof options.publicKey === 'string') {
-    options.publicKey = decodeHex(options.publicKey)
-  } else if (options.publicKey instanceof ArrayBuffer) {
-    options.publicKey = new Uint8Array(options.publicKey)
-  }
-
-  // priv
-  if (typeof options.privateKey === 'string') {
-    options.privateKey = decodeHex(options.privateKey)
-  } else if (options.privateKey instanceof ArrayBuffer) {
-    options.privateKey = new Uint8Array(options.privateKey)
+  // pub/priv to Uint8Array
+  if (format === 'hex') {
+    options.publicKey = decodeHex(options.publicKey as string)
+    if (options.privateKey) {
+      options.privateKey = decodeHex(options.privateKey as string)
+    }
+  } else if (format === 'base64url') {
+    options.publicKey = decodeBase64Url(options.publicKey as string)
+    if (options.privateKey) {
+      options.privateKey = decodeBase64Url(options.privateKey as string)
+    }
+  } else if (format === 'raw') {
+    options.publicKey = new Uint8Array(options.publicKey as Uint8Array_)
+    if (options.privateKey) {
+      options.privateKey = new Uint8Array(options.privateKey as Uint8Array_)
+    }
   }
 
   const jwk = makeJwkEC(
     options.alg,
-    options.publicKey,
-    options.privateKey,
+    options.publicKey as Uint8Array_,
+    options.privateKey as Uint8Array_ | undefined,
   )
 
   const {options: keyOptions, keyUsage} = jwkAlgorithm(jwk)

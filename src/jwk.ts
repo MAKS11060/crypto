@@ -1,5 +1,5 @@
 type JwkAlgorithmResult = {
-  options: KeyAlgorithm | EcKeyAlgorithm | RsaHashedKeyGenParams | RsaPssParams
+  options: KeyAlgorithm | EcKeyAlgorithm | RsaHashedKeyGenParams | RsaPssParams | AesKeyGenParams
   keyUsage: KeyUsage[]
 }
 
@@ -84,7 +84,24 @@ export const jwkAlgorithm = (jwk: JsonWebKey): JwkAlgorithmResult => {
         throw new Error('Cannot determine RSA algorithm without "alg" field')
       }
 
-    // case 'oct': // TODO
+    case 'oct': // AES
+      if (jwk.alg?.startsWith('A')) { // A256GCM
+        const length = jwk.alg.slice(1, 4) // A256GCM → 256
+        const type = jwk.alg.slice(4) // A256GCM → GCM
+        if (!['256', '192', '128'].includes(length)) throw new Error(`Unsupported AES length ${length}`)
+        if (!['GCM', 'CBC', 'CTR', 'KW'].includes(type)) throw new Error(`Unsupported AES type ${type}`)
+
+        return {
+          keyUsage,
+          options: {
+            name: `AES-${type}`,
+            length: +length,
+          },
+        }
+      } else {
+        throw new Error('Cannot determine AES algorithm without "alg" field')
+      }
+
     default:
       throw new Error(`Unsupported key type: ${jwk.kty}`)
   }

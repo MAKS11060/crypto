@@ -99,7 +99,17 @@ export interface AesEncryptOptions<I, O> {
   decode(input: I): Uint8Array_
 }
 
-export const aesEncrypt = <I = string, O = string>(key: CryptoKey, options: AesEncryptOptions<I, O>) => {
+interface AesEncrypt<I, O> {
+  encrypt(data: Uint8Array_): Promise<O>
+  decrypt(encrypted: I): Promise<Uint8Array_>
+  encryptJson<T>(data: T): Promise<O>
+  decryptJson<T>(encrypted: I): Promise<T>
+}
+
+export const aesEncrypt = <I = string, O = string>(
+  key: CryptoKey,
+  options: AesEncryptOptions<I, O>,
+): AesEncrypt<I, O> => {
   return {
     async encrypt(data: Uint8Array_): Promise<O> {
       const iv = crypto.getRandomValues(new Uint8Array(12)) // 96-bit IV
@@ -141,7 +151,7 @@ export const aesEncrypt = <I = string, O = string>(key: CryptoKey, options: AesE
       const jsonString = decoder.decode(decrypted)
       return JSON.parse(jsonString) as T
     },
-  }
+  } as const
 }
 
 const aesCodecBase64: AesEncryptOptions<string, string> = {

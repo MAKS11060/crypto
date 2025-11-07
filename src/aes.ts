@@ -196,7 +196,14 @@ export interface AesEncryptOptions<I, O> {
 export const aesEncrypt = <I = string, O = string>(
   key: CryptoKey,
   options: AesEncryptOptions<I, O>,
-) => {
+): {
+  encrypt(data: Uint8Array_ | ArrayBuffer): Promise<O>
+  decrypt(encrypted: I): Promise<Uint8Array_>
+  encryptText(data: string): Promise<O>
+  decryptText(encrypted: I): Promise<string>
+  encryptJson<T>(data: T): Promise<O>
+  decryptJson<T>(encrypted: I): Promise<T>
+} => {
   const ivLen = 12 // 96-bit IV
 
   return {

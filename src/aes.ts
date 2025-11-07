@@ -1,5 +1,3 @@
-import {decodeBase64Url, encodeBase64Url} from '@std/encoding/base64url'
-import {decodeHex, encodeHex} from '@std/encoding/hex'
 import type {Uint8Array_} from './utils.ts'
 
 const encoder = new TextEncoder()
@@ -31,7 +29,22 @@ export interface AesSecretOptions {
   extractable?: boolean
 }
 
-type ExportSecret = {
+/** */
+export type ImportSecret = {
+  (
+    format: 'hex' | 'base64url',
+    options: AesSecretOptions,
+    secret: string,
+  ): Promise<CryptoKey>
+  (
+    format: 'raw',
+    options: AesSecretOptions,
+    secret: ArrayBuffer | Uint8Array_,
+  ): Promise<CryptoKey>
+}
+
+/** */
+export type ExportSecret = {
   (format: 'hex' | 'base64url', key: CryptoKey): Promise<string>
   (format: 'raw', key: CryptoKey): Promise<Uint8Array_>
 }
@@ -51,22 +64,30 @@ export const exportSecret: ExportSecret = async (format, key): Promise<any> => {
   const raw = await crypto.subtle.exportKey('raw', key)
 
   if (format === 'raw') return new Uint8Array(raw)
-  if (format === 'hex') return encodeHex(raw)
-  if (format === 'base64url') return encodeBase64Url(raw)
+  if (format === 'hex') return new Uint8Array(raw).toHex()
+  if (format === 'base64url') return new Uint8Array(raw).toBase64({alphabet: 'base64url', omitPadding: true})
+
+  // if (format === 'raw') return new Uint8Array(raw)
+  // if (format === 'hex') return encodeHex(raw)
+  // if (format === 'base64url') return encodeBase64Url(raw)
 
   throw new Error(`Unknown format ${format} to export`)
 }
 
-export const importSecret = async (
-  format: 'raw' | 'hex' | 'base64url',
-  options: AesSecretOptions,
-  secret: string | ArrayBuffer | Uint8Array_,
+export const importSecret: ImportSecret = async (
+  format,
+  options,
+  secret,
 ): Promise<CryptoKey> => {
   options.length ??= 256
 
-  if (format === 'hex') secret = decodeHex(secret as string)
-  if (format === 'base64url') secret = decodeBase64Url(secret as string)
+  if (format === 'hex') secret = Uint8Array.fromHex(secret as string)
+  if (format === 'base64url') secret = Uint8Array.fromBase64(secret as string, {alphabet: 'base64url'})
   if (format === 'raw') secret = new Uint8Array(secret as Uint8Array_)
+
+  // if (format === 'hex') secret = decodeHex(secret as string)
+  // if (format === 'base64url') secret = decodeBase64Url(secret as string)
+  // if (format === 'raw') secret = new Uint8Array(secret as Uint8Array_)
 
   if ((secret as Uint8Array_).byteLength !== options.length / 8) { // byte !== bits
     throw new Error(`AES expected secret length: ${options.length / 8}`)

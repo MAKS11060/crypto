@@ -22,6 +22,7 @@ export interface AesSecretOptions {
   name: 'AES-CBC' | 'AES-CTR' | 'AES-GCM' | 'AES-KW'
 
   /**
+   * Key length in bits
    * - `128`
    * - `192`
    * - `256`
@@ -31,6 +32,7 @@ export interface AesSecretOptions {
   length?: 128 | 192 | 256
 
   /**
+   * Whether the key can be exported
    * @default true
    */
   extractable?: boolean
@@ -40,11 +42,25 @@ export interface AesSecretOptions {
  * Function type for importing secret keys from different formats
  */
 export type ImportSecret = {
+  /**
+   * Import secret key from hex or base64url string
+   * @param format - Format of the input string
+   * @param options - {@link AesSecretOptions} AES options
+   * @param secret - Secret string in specified format
+   * @returns Promise resolving to {@linkcode CryptoKey}
+   */
   (
     format: 'hex' | 'base64url',
     options: AesSecretOptions,
     secret: string,
   ): Promise<CryptoKey>
+  /**
+   * Import secret key from raw binary data
+   * @param format - Format of the input data
+   * @param options - {@link AesSecretOptions} AES options
+   * @param secret - Secret data as ArrayBuffer or {@linkcode Uint8Array_}
+   * @returns Promise resolving to {@linkcode CryptoKey}
+   */
   (
     format: 'raw',
     options: AesSecretOptions,
@@ -52,12 +68,31 @@ export type ImportSecret = {
   ): Promise<CryptoKey>
 }
 
-/** */
+/**
+ * Function type for exporting secret keys to different formats
+ */
 export type ExportSecret = {
+  /**
+   * Export secret key to hex or base64url string
+   * @param format - Output format
+   * @param key - {@linkcode CryptoKey} to export
+   * @returns Promise resolving to string representation
+   */
   (format: 'hex' | 'base64url', key: CryptoKey): Promise<string>
+  /**
+   * Export secret key to raw binary data
+   * @param format - Output format
+   * @param key - {@linkcode CryptoKey} to export
+   * @returns Promise resolving to {@linkcode Uint8Array_}
+   */
   (format: 'raw', key: CryptoKey): Promise<Uint8Array_>
 }
 
+/**
+ * Generate a new AES secret key with specified options
+ * @param options - {@link AesSecretOptions} AES secret key options
+ * @returns Promise resolving to generated {@linkcode CryptoKey}
+ */
 export const generateAesSecret = async (options: AesSecretOptions): Promise<CryptoKey> => {
   options.length ??= 256
 
@@ -68,6 +103,13 @@ export const generateAesSecret = async (options: AesSecretOptions): Promise<Cryp
   ) as CryptoKey
 }
 
+/**
+ * Export a secret key to specified format
+ * @param format - Format to export the key in
+ * @param key - {@linkcode CryptoKey} to export
+ * @returns Promise resolving to exported key data
+ * @throws Error if key type is not 'secret'
+ */
 export const exportSecret: ExportSecret = async (
   format,
   key,
@@ -82,6 +124,14 @@ export const exportSecret: ExportSecret = async (
   throw new Error(`Unknown format ${format} to export`)
 }
 
+/**
+ * Import a secret key from specified format
+ * @param format - Format of the input data
+ * @param options - {@link AesSecretOptions} AES secret key options
+ * @param secret - Secret data in specified format
+ * @returns Promise resolving to imported {@linkcode CryptoKey}
+ * @throws Error if secret length doesn't match expected length
+ */
 export const importSecret: ImportSecret = async (
   format,
   options,
@@ -106,6 +156,11 @@ export const importSecret: ImportSecret = async (
   )
 }
 
+/**
+ * Derive an AES-GCM key from a string secret using SHA-256 hashing
+ * @param secret - Input string secret
+ * @returns Promise resolving to derived {@linkcode CryptoKey}
+ */
 export const deriveKey = async (secret: string): Promise<CryptoKey> => {
   const secretBuffer = encoder.encode(secret)
   const hashBuffer = await crypto.subtle.digest('SHA-256', secretBuffer)
@@ -118,19 +173,38 @@ export const deriveKey = async (secret: string): Promise<CryptoKey> => {
   )
 }
 
-// enc
+/**
+ * Interface for AES encryption options with custom encoding/decoding
+ * @template I - Input type for decryption
+ * @template O - Output type for encryption
+ */
 export interface AesEncryptOptions<I, O> {
+  /** Encode function to transform encrypted bytes to output format */
   encode(output: Uint8Array_): O
+  /** Decode function to transform input format to bytes for decryption */
   decode(input: I): Uint8Array_
 }
 
-export const aesEncrypt = <I = Uint8Array_, O = string>(
+/**
+ * Create AES encryption/decryption instance with specified key and options
+ * @template I - Input type for decryption
+ * @template O - Output type for encryption
+ * @param key - AES key to use for encryption/decryption ({@linkcode CryptoKey})
+ * @param options - {@link AesEncryptOptions} Encoding/decoding options
+ * @returns Object with encryption/decryption methods
+ */
+export const aesEncrypt = <I = string, O = string>(
   key: CryptoKey,
   options: AesEncryptOptions<I, O>,
 ) => {
   const ivLen = 12 // 96-bit IV
 
   return {
+    /**
+     * Encrypt data using AES-GCM
+     * @param data - Data to encrypt ({@linkcode Uint8Array_} or ArrayBuffer)
+     * @returns Promise resolving to encrypted data in specified output format
+     */
     async encrypt(data: Uint8Array_ | ArrayBuffer): Promise<O> {
       const iv = crypto.getRandomValues(new Uint8Array(ivLen)) // 96-bit IV
 
@@ -147,6 +221,11 @@ export const aesEncrypt = <I = Uint8Array_, O = string>(
       return options.encode(result)
     },
 
+    /**
+     * Decrypt data using AES-GCM
+     * @param encrypted - Encrypted data in input format
+     * @returns Promise resolving to decrypted bytes
+     */
     async decrypt(encrypted: I): Promise<Uint8Array_> {
       const buffer = options.decode(encrypted)
 
@@ -161,19 +240,41 @@ export const aesEncrypt = <I = Uint8Array_, O = string>(
       return new Uint8Array(decrypted)
     },
 
+    /**
+     * Encrypt text string
+     * @param data - Text to encrypt
+     * @returns Promise resolving to encrypted data in specified output format
+     */
     async encryptText(data: string): Promise<O> {
       return await this.encrypt(encoder.encode(data))
     },
 
+    /**
+     * Decrypt text string
+     * @param encrypted - Encrypted data in input format
+     * @returns Promise resolving to decrypted text
+     */
     async decryptText(encrypted: I): Promise<string> {
       return decoder.decode(await this.decrypt(encrypted))
     },
 
+    /**
+     * Encrypt JSON object
+     * @template T - Type of JSON data
+     * @param data - JSON object to encrypt
+     * @returns Promise resolving to encrypted data in specified output format
+     */
     async encryptJson<T>(data: T): Promise<O> {
       const jsonBytes = encoder.encode(JSON.stringify(data))
       return await this.encrypt(jsonBytes)
     },
 
+    /**
+     * Decrypt JSON object
+     * @template T - Type of JSON data
+     * @param encrypted - Encrypted data in input format
+     * @returns Promise resolving to decrypted JSON object
+     */
     async decryptJson<T>(encrypted: I): Promise<T> {
       const decrypted = await this.decrypt(encrypted)
       return JSON.parse(decoder.decode(decrypted))
@@ -181,24 +282,41 @@ export const aesEncrypt = <I = Uint8Array_, O = string>(
   }
 }
 
+/**
+ * AES codec for base64 format
+ */
 const aesCodecBase64: AesEncryptOptions<string, string> = {
   encode: (output) => output.toBase64(),
   decode: (input) => Uint8Array.fromBase64(input),
 }
+
+/**
+ * AES codec for base64url format
+ */
 const aesCodecBase64url: AesEncryptOptions<string, string> = {
   encode: (output) => output.toBase64({alphabet: 'base64url', omitPadding: true}),
   decode: (input) => Uint8Array.fromBase64(input, {alphabet: 'base64url'}),
 }
+
+/**
+ * AES codec for hex format
+ */
 const aesCodecHex: AesEncryptOptions<string, string> = {
   encode: (output) => output.toHex(),
   decode: (input) => Uint8Array.fromHex(input),
 }
 
+/**
+ * AES codec for raw bytes format
+ */
 const aesCodecBytes: AesEncryptOptions<Uint8Array_ | ArrayBuffer, Uint8Array_> = {
   encode: (output) => output,
   decode: (input) => new Uint8Array(input),
 }
 
+/**
+ * Collection of predefined AES codecs for different formats
+ */
 export const aesCodec = {
   base64: aesCodecBase64,
   base64url: aesCodecBase64url,

@@ -58,7 +58,7 @@ Deno.test('deriveKey', async (t) => {
 })
 
 //
-Deno.test('initAesEncrypt', async (t) => {
+Deno.test('aesEncrypt', async (t) => {
   const key = await deriveKey('secret')
   // const aes = initAesEncrypt(key, aesCodec.base64)
   const aes = aesEncrypt(key, aesCodec.base64url)
@@ -68,4 +68,44 @@ Deno.test('initAesEncrypt', async (t) => {
   const dec = await aes.decryptJson(enc)
   // console.log({enc, dec})
   expect(dec).toBe('1234')
+})
+
+Deno.test('aesEncrypt-1', async (t) => {
+  const key = await deriveKey('secret')
+
+  await t.step('encrypt', async (t) => {
+    const aes = aesEncrypt(key, aesCodec.bytes)
+
+    const input = new Uint8Array([1, 2, 3, 4])
+
+    const buf = await aes.encrypt(input)
+    expect(buf).toBeInstanceOf(Uint8Array)
+
+    const dec = await aes.decrypt(buf)
+    expect(dec).toEqual(input)
+  })
+
+  await t.step('encryptText', async (t) => {
+    const aes = aesEncrypt(key, aesCodec.bytes)
+
+    const input = 'hello'
+
+    const buf = await aes.encryptText(input)
+    expect(buf).toBeInstanceOf(Uint8Array)
+
+    const text = await aes.decryptText(buf)
+    expect(text).toEqual(input)
+  })
+
+  await t.step('encryptJson', async (t) => {
+    const aes = aesEncrypt(key, aesCodec.bytes)
+
+    const input = ['hello']
+
+    const buf = await aes.encryptJson(input)
+    expect(buf).toBeInstanceOf(Uint8Array)
+
+    const dec = await aes.decryptJson<string[]>(buf)
+    expect(dec).toEqual(input)
+  })
 })

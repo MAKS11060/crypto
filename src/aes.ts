@@ -41,7 +41,7 @@ export interface AesSecretOptions {
 /**
  * Function type for importing secret keys from different formats
  */
-export type ImportSecret = {
+export interface ImportSecret {
   /**
    * Import secret key from hex or base64url string
    * @param format - Format of the input string
@@ -71,7 +71,7 @@ export type ImportSecret = {
 /**
  * Function type for exporting secret keys to different formats
  */
-export type ExportSecret = {
+export interface ExportSecret {
   /**
    * Export secret key to hex or base64url string
    * @param format - Output format

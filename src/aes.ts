@@ -292,7 +292,7 @@ export const aesEncrypt = <I = string, O = string>(
 /**
  * AES codec for base64 format
  */
-const aesCodecBase64: AesEncryptOptions<string, string> = {
+export const aesCodecBase64: AesEncryptOptions<string, string> = {
   encode: (output) => output.toBase64(),
   decode: (input) => Uint8Array.fromBase64(input),
 }
@@ -300,7 +300,7 @@ const aesCodecBase64: AesEncryptOptions<string, string> = {
 /**
  * AES codec for base64url format
  */
-const aesCodecBase64url: AesEncryptOptions<string, string> = {
+export const aesCodecBase64url: AesEncryptOptions<string, string> = {
   encode: (output) => output.toBase64({alphabet: 'base64url', omitPadding: true}),
   decode: (input) => Uint8Array.fromBase64(input, {alphabet: 'base64url'}),
 }
@@ -308,7 +308,7 @@ const aesCodecBase64url: AesEncryptOptions<string, string> = {
 /**
  * AES codec for hex format
  */
-const aesCodecHex: AesEncryptOptions<string, string> = {
+export const aesCodecHex: AesEncryptOptions<string, string> = {
   encode: (output) => output.toHex(),
   decode: (input) => Uint8Array.fromHex(input),
 }
@@ -316,7 +316,7 @@ const aesCodecHex: AesEncryptOptions<string, string> = {
 /**
  * AES codec for raw bytes format
  */
-const aesCodecBytes: AesEncryptOptions<Uint8Array_ | ArrayBuffer, Uint8Array_> = {
+export const aesCodecBytes: AesEncryptOptions<Uint8Array_ | ArrayBuffer, Uint8Array_> = {
   encode: (output) => output,
   decode: (input) => new Uint8Array(input),
 }

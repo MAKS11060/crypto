@@ -3,6 +3,7 @@
   "name": "@maks11060/crypto",
   "version": "0.0.0",
   "tasks": {
+    "init": "deno i && git config core.hooksPath .hooks",
     "test": "deno test",
     "ok": "deno fmt --check && deno task test && deno publish --dry-run --allow-dirty"
   },

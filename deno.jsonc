@@ -4,8 +4,8 @@
   "version": "0.0.0",
   "tasks": {
     "init": "deno i && git config core.hooksPath .hooks",
-    "test": "deno test",
-    "ok": "deno fmt --check && deno task test && deno publish --dry-run --allow-dirty"
+    "ok": "deno fmt --check && deno publish --dry-run --allow-dirty",
+    "test": "deno test --parallel"
   },
   "imports": {
     "@std/bytes": "jsr:@std/bytes@^1.0.6",

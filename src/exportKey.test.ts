@@ -2,7 +2,7 @@ import {expect} from 'jsr:@std/expect/expect'
 import {exportKey} from './exportKey.ts'
 import {importKey} from './importKey.ts'
 import {generateKeyPair} from './keys.ts'
-import {KeyAlg} from './utils.ts'
+import type {KeyAlg} from './utils.ts'
 
 Deno.test('exportKey', async (t) => {
   const algs: KeyAlg[] = [
